@@ -2,9 +2,9 @@ package entity
 
 type Match struct {
 	TurnOwner PlayerName
-	Players   map[PlayerName]Player
+	Players   []PlayerName
 	Actions   []Action
-	Board     Board
+	Board     *Board
 	Chat      []MessageAction
-	Winner    *PlayerName
+	Winner    PlayerName
 }

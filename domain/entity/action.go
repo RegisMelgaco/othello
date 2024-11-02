@@ -17,7 +17,7 @@ type PlaceAction struct {
 }
 
 func (a PlaceAction) Commit(m *Match) {
-	m.Board.grid[a.Pos.X][a.Pos.Y] = m.Players[a.Author].Color
+	m.Board.grid[a.Pos.X][a.Pos.Y] = a.Author
 }
 
 type RemoveAction struct {
@@ -34,9 +34,9 @@ type PassAction struct {
 }
 
 func (a PassAction) Commit(m *Match) {
-	for k := range m.Players {
-		if a.Author != k {
-			m.TurnOwner = k
+	for _, p := range m.Players {
+		if a.Author != p {
+			m.TurnOwner = p
 		}
 	}
 }
@@ -46,9 +46,9 @@ type GiveUpAction struct {
 }
 
 func (a GiveUpAction) Commit(m *Match) {
-	for k := range m.Players {
-		if a.Author != k {
-			m.Winner = &k
+	for _, p := range m.Players {
+		if a.Author != p {
+			m.Winner = p
 		}
 	}
 }

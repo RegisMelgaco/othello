@@ -1,15 +1,15 @@
 package entity
 
 type Board struct {
-	grid [][]string
+	grid [][]PlayerName
 }
 
 const emptyColor = "none"
 
 func NewBoard() *Board {
-	b := Board{make([][]string, 0, 8)}
+	b := Board{make([][]PlayerName, 0, 8)}
 	for range b.grid {
-		row := make([]string, 0, 8)
+		row := make([]PlayerName, 0, 8)
 		for range row {
 			row = append(row, emptyColor)
 		}
@@ -21,7 +21,7 @@ func NewBoard() *Board {
 }
 
 func (m *Match) FindWinner() *PlayerName {
-	count := make(map[string]int, 2)
+	count := make(map[PlayerName]int, 2)
 	for _, row := range m.Board.grid {
 		for _, v := range row {
 			if v == emptyColor {
@@ -37,20 +37,14 @@ func (m *Match) FindWinner() *PlayerName {
 	}
 
 	var (
-		winnerColor string
+		winner      PlayerName
 		winnerCount int
 	)
-	for color, c := range count {
+	for p, c := range count {
 		if c > winnerCount {
-			winnerColor = color
+			winner = p
 		}
 	}
 
-	for _, p := range m.Players {
-		if p.Color == winnerColor {
-			return &p.PlayerName
-		}
-	}
-
-	return nil
+	return &winner
 }
