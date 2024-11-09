@@ -1,29 +1,28 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
 )
 
-func (a App) connect(selfIP, selfPort, peerIP, peerPort string) error {
-	if selfIP < peerIP {
-		err := a.listen(selfPort)
-
-		return fmt.Errorf("ouvindo porta tcp: %w", err)
-	}
-
+func (a App) connect(selfPort, peerIP, peerPort string) error {
 	err := a.dial(peerIP, peerPort)
 	if err != nil {
-		return fmt.Errorf("connectando ao peer tcp: %w", err)
+		err2 := a.listen(selfPort)
+
+		if err2 != nil {
+			return errors.Join(err, err2)
+		}
 	}
 
 	return nil
 }
 
 func (a App) listen(port string) error {
-	ln, err := net.Listen("tcp", port)
+	ln, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return fmt.Errorf("iniciando escuta a porta tcp: %w", err)
 	}

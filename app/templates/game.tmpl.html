@@ -1,12 +1,97 @@
-<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset='utf-8'>
     <title>Enter Othello</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    <script src="/static/htmx.min.js"></script>
 </head>
+
 <body>
-    <h1> {{ index .Players 0 }} vs {{ index .Players 0 }} </h1>
+    <h2> {{ index .Players 0 }} vs {{ index .Players 1 }} </h2>
+
+    <section class="hud">
+        <div id="board">
+            {{ with $colors := getGridColors . }}
+            {{ range $i, $row := . }}
+            {{ range $j, $color := $row }}
+            <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board"  class="board-position">
+                <div class="circle" style="background-color: {{ $color }}"></div>
+            </div>
+            {{ end }}
+            {{ end }}
+            {{ end }}
+        </div>
+
+        <div class="chat">
+            <h3>Chat</h3>
+            <section>
+                {{ range $i, $msg := .Chat }}
+                <p>
+                    <b>{{ $msg.Author }}</b>: {{ $msg.Text }}
+                </p>
+                {{ end }}
+            </section>
+
+            <div class="chat-input-box">
+                <input> <button>Enviar</button>
+            </div>
+        </div>
+
+    </section>
 </body>
+
 </html>
+
+<style>
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .hud {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    .chat {
+        width: calc(8 * 3rem);
+        height: calc(8 * 3rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        section {
+            overflow-y: scroll;
+            flex-grow: 1;
+        }
+    }
+
+    .chat-input-box {
+        display: flex;
+
+        input {
+            flex-grow: 1;
+        }
+    }
+
+    #board {
+        width: calc(8 * 3rem);
+        display: grid;
+        grid-template-columns: repeat(8, 3rem);
+    }
+
+    .board-position {
+        border: 1px solid black;
+        height: 3rem;
+        width: 3rem;
+    }
+
+    .circle {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 100%;
+    }
+</style>

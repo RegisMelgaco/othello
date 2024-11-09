@@ -17,7 +17,7 @@ type PlaceAction struct {
 }
 
 func (a PlaceAction) Commit(m *Match) {
-	m.Board.grid[a.Pos.X][a.Pos.Y] = a.Author
+	m.Board.Grid[a.Pos.X][a.Pos.Y] = a.Author
 }
 
 type RemoveAction struct {
@@ -26,7 +26,7 @@ type RemoveAction struct {
 }
 
 func (a RemoveAction) Commit(m *Match) {
-	m.Board.grid[a.Pos.X][a.Pos.Y] = emptyColor
+	m.Board.Grid[a.Pos.X][a.Pos.Y] = EmptyColor
 }
 
 type PassAction struct {

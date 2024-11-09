@@ -2,18 +2,20 @@ package main
 
 import (
 	"fmt"
-	"html/template"
-	"net/http"
+	"local/othello/domain/entity"
+	"time"
 )
 
-func errorMsg(w http.ResponseWriter, err error) {
-	templ, _ := template.ParseFS(templates, "templates/error.tmpl.html")
-	fmt.Println("err: ", err)
+func (a *App) errorMsg(err error) {
+	a.match.Chat = append(a.match.Chat, entity.MessageAction{
+		Author:    "servidor",
+		CreatedAt: time.Now(),
+		Text:      fmt.Sprintf("erro = %s", err.Error()),
+	})
 
-	w.WriteHeader(http.StatusInternalServerError)
-	templ.Execute(w, ErrorData{Msg: err.Error()})
+	fmt.Println("err: ", err)
 }
 
 type ErrorData struct {
-	Msg string
+	Err string
 }

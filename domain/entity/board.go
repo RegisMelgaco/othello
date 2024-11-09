@@ -1,20 +1,20 @@
 package entity
 
 type Board struct {
-	grid [][]PlayerName
+	Grid [][]PlayerName
 }
 
-const emptyColor = "none"
+const EmptyColor = "none"
 
 func NewBoard() *Board {
 	b := Board{make([][]PlayerName, 0, 8)}
-	for range b.grid {
+	for range 8 {
 		row := make([]PlayerName, 0, 8)
-		for range row {
-			row = append(row, emptyColor)
+		for range 8 {
+			row = append(row, EmptyColor)
 		}
 
-		b.grid = append(b.grid, row)
+		b.Grid = append(b.Grid, row)
 	}
 
 	return &b
@@ -22,9 +22,9 @@ func NewBoard() *Board {
 
 func (m *Match) FindWinner() *PlayerName {
 	count := make(map[PlayerName]int, 2)
-	for _, row := range m.Board.grid {
+	for _, row := range m.Board.Grid {
 		for _, v := range row {
-			if v == emptyColor {
+			if v == EmptyColor {
 				return nil
 			}
 
