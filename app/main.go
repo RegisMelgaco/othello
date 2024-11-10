@@ -26,9 +26,11 @@ func main() {
 		panic(fmt.Errorf("new app: %w", err))
 	}
 
-	mux.HandleFunc("GET /", app.home)
-	mux.HandleFunc("GET /game", app.game)
+	mux.HandleFunc("GET /", app.getHome)
+	mux.HandleFunc("GET /game", app.getGame)
 	mux.HandleFunc("PUT /game", app.updateGame)
+	mux.HandleFunc("GET /chat", app.getChat)
+	mux.HandleFunc("PUT /chat", app.updateChat)
 
 	fs := http.FileServerFS(static.FS)
 	mux.HandleFunc("GET /static/*", func(w http.ResponseWriter, r *http.Request) {

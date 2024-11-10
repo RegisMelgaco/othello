@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func (a *App) game(w http.ResponseWriter, r *http.Request) {
-	defer func() {
+func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
+	go func() {
 		err := a.connect(
 			r.FormValue("self-port"),
 			r.FormValue("peer-ip"),

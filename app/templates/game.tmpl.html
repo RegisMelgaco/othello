@@ -1,44 +1,35 @@
-<html>
+<h2> {{ index .Players 0 }} vs {{ index .Players 1 }} </h2>
 
-<head>
-    <meta charset='utf-8'>
-    <title>Enter Othello</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <script src="/static/htmx.min.js"></script>
-</head>
-
-<body>
-    <h2> {{ index .Players 0 }} vs {{ index .Players 1 }} </h2>
-
-    <section class="hud">
-        <div id="board">
-            {{ with $colors := getGridColors . }}
-            {{ range $i, $row := . }}
-            {{ range $j, $color := $row }}
-            <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board"  class="board-position">
-                <div class="circle" style="background-color: {{ $color }}"></div>
-            </div>
-            {{ end }}
-            {{ end }}
-            {{ end }}
+<section class="hud">
+    <div id="board">
+        {{ with $colors := getGridColors . }}
+        {{ range $i, $row := . }}
+        {{ range $j, $color := $row }}
+        <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board" class="board-position">
+            <div class="circle" style="background-color: {{ $color }}"></div>
         </div>
+        {{ end }}
+        {{ end }}
+        {{ end }}
+    </div>
 
-        <div class="chat">
-            <h3>Chat</h3>
-            <section>
-                {{ range $i, $msg := .Chat }}
-                <p>
-                    <b>{{ $msg.Author }}</b>: {{ $msg.Text }}
-                </p>
-                {{ end }}
-            </section>
+    <div class="chat">
+        <h3>Chat</h3>
+        <section hx-get="/chat" hx-trigger="every 1s" hx-swap="innerHTML">
+            {{ range $i, $msg := .Chat }}
+            <p>
+                <b>{{ $msg.Author }}</b>: {{ $msg.Text }}
+            </p>
+            {{ end }}
+        </section>
 
-            <div class="chat-input-box">
-                <input> <button>Enviar</button>
-            </div>
-        </div>
+        <form hx-put="/chat" class="chat-input-box" hx-swap="innerHTML">
+            <input name="msg">
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
 
-    </section>
+</section>
 </body>
 
 </html>

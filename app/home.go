@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (a *App) home(w http.ResponseWriter, r *http.Request) {
+func (a *App) getHome(w http.ResponseWriter, r *http.Request) {
 	err := a.templs.home.Execute(w, nil)
 	if err != nil {
 		fmt.Println(err)
