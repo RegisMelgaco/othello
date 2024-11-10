@@ -9,7 +9,7 @@ import (
 )
 
 type App struct {
-	match  entity.Match
+	match  *entity.Match
 	conn   net.Conn
 	templs struct {
 		game      *template.Template
@@ -24,7 +24,9 @@ type App struct {
 var templates embed.FS
 
 func NewApp() (*App, error) {
-	app := &App{}
+	app := &App{
+		match: &entity.Match{},
+	}
 
 	var err error
 

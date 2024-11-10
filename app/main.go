@@ -31,6 +31,7 @@ func main() {
 	mux.HandleFunc("PUT /game", app.updateGame)
 	mux.HandleFunc("GET /chat", app.getChat)
 	mux.HandleFunc("PUT /chat", app.updateChat)
+	mux.HandleFunc("PUT /pass", app.pass)
 
 	fs := http.FileServerFS(static.FS)
 	mux.HandleFunc("GET /static/*", func(w http.ResponseWriter, r *http.Request) {

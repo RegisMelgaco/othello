@@ -1,26 +1,28 @@
 <h2> {{ index .Players 0 }} vs {{ index .Players 1 }} </h2>
 
 <section class="hud">
-    <div id="board">
-        {{ with $colors := getGridColors . }}
-        {{ range $i, $row := . }}
-        {{ range $j, $color := $row }}
-        <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board" class="board-position">
-            <div class="circle" style="background-color: {{ $color }}"></div>
+    <section>
+        <div id="board">
+            {{ with $colors := getGridColors . }}
+            {{ range $i, $row := . }}
+            {{ range $j, $color := $row }}
+            <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board"
+                class="board-position">
+                <div class="circle" style="background-color: {{ $color }}"></div>
+            </div>
+            {{ end }}
+            {{ end }}
+            {{ end }}
         </div>
-        {{ end }}
-        {{ end }}
-        {{ end }}
-    </div>
+
+        <hr>
+
+        <button hx-put="/pass" hx-swap="none">Passar vez</button>
+    </section>
 
     <div class="chat">
         <h3>Chat</h3>
         <section hx-get="/chat" hx-trigger="every 1s" hx-swap="innerHTML">
-            {{ range $i, $msg := .Chat }}
-            <p>
-                <b>{{ $msg.Author }}</b>: {{ $msg.Text }}
-            </p>
-            {{ end }}
         </section>
 
         <form hx-put="/chat" class="chat-input-box" hx-swap="innerHTML">
@@ -57,6 +59,8 @@
         section {
             overflow-y: scroll;
             flex-grow: 1;
+            display: flex;
+            flex-direction: column-reverse;
         }
     }
 
@@ -84,5 +88,6 @@
         width: 1.5rem;
         height: 1.5rem;
         border-radius: 100%;
+        margin: .75rem;
     }
 </style>

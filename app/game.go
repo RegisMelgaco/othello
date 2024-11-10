@@ -4,30 +4,14 @@ import (
 	"fmt"
 	"local/othello/domain/entity"
 	"net/http"
+	"sync"
 	"time"
 )
 
+var connectOnce sync.Once
+
 func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
-	go func() {
-		err := a.connect(
-			r.FormValue("self-port"),
-			r.FormValue("peer-ip"),
-			r.FormValue("peer-port"),
-		)
-
-		msg := "conectado com sucesso"
-		if err != nil {
-			msg = "falha ao tentar conectar ao servidor tcp (%w). Aguardando conexão do outro client."
-		}
-
-		a.match.Chat = append(a.match.Chat, entity.MessageAction{
-			Author:    "jogo",
-			CreatedAt: time.Now(),
-			Text:      msg,
-		})
-	}()
-
-	a.match = entity.Match{
+	a.match = &entity.Match{
 		Players: []entity.PlayerName{
 			entity.PlayerName(r.FormValue("self-name")),
 			entity.PlayerName(r.FormValue("peer-name")),
@@ -50,4 +34,39 @@ func (a *App) getGame(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	go connectOnce.Do(func() {
+		err := a.dial(
+			r.FormValue("peer-ip"),
+			r.FormValue("peer-port"),
+		)
+
+		msg := "conectado com sucesso"
+		if err != nil {
+			msg = fmt.Sprintf("falha ao tentar conectar ao servidor tcp (%s). Aguardando conexão do outro client.", err.Error())
+		}
+
+		entity.MessageAction{
+			Author:    "rede",
+			CreatedAt: time.Now(),
+			Text:      msg,
+		}.Commit(a.match)
+
+		if err == nil {
+			return
+		}
+
+		err = a.listen(r.FormValue("self-port"))
+
+		msg = "conectado com sucesso"
+		if err != nil {
+			msg = fmt.Sprintf("falha ao tentar conectar ao servidor tcp (%s). Aguardando conexão do outro client.", err.Error())
+		}
+
+		entity.MessageAction{
+			Author:    "rede",
+			CreatedAt: time.Now(),
+			Text:      msg,
+		}.Commit(a.match)
+	})
 }

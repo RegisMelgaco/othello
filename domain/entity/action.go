@@ -1,9 +1,21 @@
 package entity
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Action interface {
 	Commit(*Match)
+	HasTurn(*Match) bool
+}
+
+type Authory struct {
+	Author PlayerName
+}
+
+func (a Authory) HasTurn(m *Match) bool {
+	return a.Author == m.TurnOwner
 }
 
 type BoardPosition struct {
@@ -12,53 +24,65 @@ type BoardPosition struct {
 }
 
 type PlaceAction struct {
-	Author PlayerName
-	Pos    BoardPosition
+	Authory
+	Pos BoardPosition
+	Val PlayerName
 }
 
 func (a PlaceAction) Commit(m *Match) {
-	m.Board.Grid[a.Pos.X][a.Pos.Y] = a.Author
+	m.IfHasTurn(a, func() {
+		m.Board.Grid[a.Pos.X][a.Pos.Y] = a.Val
+	})
 }
 
 type RemoveAction struct {
-	Author PlayerName
-	Pos    BoardPosition
+	Authory
+	Pos BoardPosition
 }
 
 func (a RemoveAction) Commit(m *Match) {
-	m.Board.Grid[a.Pos.X][a.Pos.Y] = EmptyColor
+	m.IfHasTurn(a, func() {
+		m.Board.Grid[a.Pos.X][a.Pos.Y] = EmptyColor
+	})
 }
 
 type PassAction struct {
+	Authory
 	Author PlayerName
+	Next   PlayerName
 }
 
 func (a PassAction) Commit(m *Match) {
-	for _, p := range m.Players {
-		if a.Author != p {
-			m.TurnOwner = p
-		}
-	}
+	m.TurnOwner = a.Next
+
+	MessageAction{
+		Authory:   a.Authory,
+		CreatedAt: time.Now(),
+		Text:      fmt.Sprintf("passou a vez para %s", m.TurnOwner),
+	}.Commit(m)
 }
 
 type GiveUpAction struct {
-	Author PlayerName
+	Authory
+	Winner PlayerName
 }
 
 func (a GiveUpAction) Commit(m *Match) {
-	for _, p := range m.Players {
-		if a.Author != p {
-			m.Winner = p
-		}
-	}
+	m.Winner = a.Winner
 }
 
 type MessageAction struct {
-	Author    PlayerName
+	Authory
 	CreatedAt time.Time
 	Text      string
 }
 
 func (a MessageAction) Commit(m *Match) {
 	m.Chat = append(m.Chat, a)
+}
+
+func (m *Match) IfHasTurn(a Action, f func()) {
+	if a.HasTurn(m) {
+		f()
+	}
 }

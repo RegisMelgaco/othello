@@ -1,25 +1,10 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"local/othello/domain/entity"
 	"net"
-	"net/http"
-	"strings"
 )
-
-func (a App) connect(selfPort, peerIP, peerPort string) error {
-	err := a.dial(peerIP, peerPort)
-	if err != nil {
-		err2 := a.listen(selfPort)
-
-		if err2 != nil {
-			return errors.Join(err, err2)
-		}
-	}
-
-	return nil
-}
 
 func (a App) listen(port string) error {
 	ln, err := net.Listen("tcp", ":"+port)
@@ -32,6 +17,8 @@ func (a App) listen(port string) error {
 		return fmt.Errorf("aceitando conexão tcp: %w", err)
 	}
 
+	a.match.TurnOwner = a.match.Players[0]
+
 	return nil
 }
 
@@ -42,6 +29,10 @@ func (a App) dial(ip, port string) error {
 	if err != nil {
 		return fmt.Errorf("iniciando conexão tcp: %w", err)
 	}
+
+	entity.PassAction{
+		Author: a.match.Players[0],
+	}.Commit(a.match)
 
 	return nil
 }
@@ -61,13 +52,4 @@ func hostIP() (string, error) {
 	}
 
 	return "", fmt.Errorf("endereço não encontrado")
-}
-
-func requestIPPort(r *http.Request) (ip, port string, err error) {
-	ss := strings.Split(r.RemoteAddr, ":")
-	if len(ss) != 2 {
-		return "", "", fmt.Errorf("unexpected remote addr format")
-	}
-
-	return ss[0], ss[1], nil
 }

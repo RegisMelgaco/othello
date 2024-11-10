@@ -23,15 +23,8 @@ func (a *App) updateGame(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	clickedPos := a.match.Board.Grid[x][y]
-	switch clickedPos {
-	case entity.EmptyColor:
-		a.match.Board.Grid[x][y] = a.match.Players[0]
-	case a.match.Players[0]:
-		a.match.Board.Grid[x][y] = a.match.Players[1]
-	case a.match.Players[0]:
-		a.match.Board.Grid[x][y] = entity.EmptyColor
-	}
+	act := a.match.HandleClick(entity.BoardPosition{X: x, Y: y})
+	slog.Info("board click handled", slog.Any("action", act))
 
 	err = a.templs.board.Execute(w, a.match)
 	if err != nil {
@@ -57,6 +50,8 @@ func getGridColors(m entity.Match) [][]string {
 			}
 		}
 	}
+
+	slog.Debug("getGridColors", slog.Any("out", out))
 
 	return out
 }
