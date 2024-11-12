@@ -7,8 +7,8 @@ import (
 )
 
 func (a *App) errorMsg(err error) {
-	a.match.Chat = append(a.match.Chat, entity.MessageAction{
-		Author:    "servidor",
+	a.match.Commit(entity.MessageAction{
+		Authory:   entity.Authory{Author: "servidor"},
 		CreatedAt: time.Now(),
 		Text:      fmt.Sprintf("erro = %s", err.Error()),
 	})

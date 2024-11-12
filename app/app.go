@@ -24,39 +24,37 @@ type App struct {
 var templates embed.FS
 
 func NewApp() (*App, error) {
-	app := &App{
-		match: &entity.Match{},
-	}
+	app := &App{}
 
 	var err error
 
 	app.templs.home, err = template.ParseFS(templates, "templates/home.tmpl.html")
 	if err != nil {
-		return nil, fmt.Errorf("parsing home: %w", err)
+		return nil, fmt.Errorf("parsing home template: %w", err)
 	}
 
 	app.templs.chatMsgs, err = template.ParseFS(templates, "templates/chat_msgs.tmpl.html")
 	if err != nil {
-		return nil, fmt.Errorf("parsing chat: %w", err)
+		return nil, fmt.Errorf("parsing chat msgs template: %w", err)
 	}
 
 	app.templs.chatInput, err = template.ParseFS(templates, "templates/chat_input.tmpl.html")
 	if err != nil {
-		return nil, fmt.Errorf("parsing chat: %w", err)
+		return nil, fmt.Errorf("parsing chat input template: %w", err)
 	}
 
 	app.templs.game, err = template.New("game.tmpl.html").Funcs(template.FuncMap{
 		"getGridColors": getGridColors,
 	}).ParseFS(templates, "templates/game.tmpl.html")
 	if err != nil {
-		return nil, fmt.Errorf("parsing game: %w", err)
+		return nil, fmt.Errorf("parsing game template: %w", err)
 	}
 
 	app.templs.board, err = template.New("board.tmpl.html").Funcs(template.FuncMap{
 		"getGridColors": getGridColors,
 	}).ParseFS(templates, "templates/board.tmpl.html")
 	if err != nil {
-		return nil, fmt.Errorf("parsing board: %w", err)
+		return nil, fmt.Errorf("parsing board template: %w", err)
 	}
 
 	return app, nil

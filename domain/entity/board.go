@@ -22,7 +22,7 @@ func NewBoard() *Board {
 
 func (m *Match) FindWinner() *PlayerName {
 	count := make(map[PlayerName]int, 2)
-	for _, row := range m.Board.Grid {
+	for _, row := range m.board.Grid {
 		for _, v := range row {
 			if v == EmptyColor {
 				return nil
@@ -47,4 +47,8 @@ func (m *Match) FindWinner() *PlayerName {
 	}
 
 	return &winner
+}
+
+func (m *Match) Grid() [][]PlayerName {
+	return m.board.Grid
 }

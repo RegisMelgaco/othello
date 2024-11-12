@@ -37,15 +37,15 @@ func (a *App) updateGame(w http.ResponseWriter, r *http.Request) {
 
 func getGridColors(m entity.Match) [][]string {
 	out := make([][]string, 8)
-	for i, row := range m.Board.Grid {
+	for i, row := range m.Grid() {
 		out[i] = make([]string, 8)
 		for j, pos := range row {
 			switch pos {
-			case m.Players[0]:
+			case m.Self():
 				out[i][j] = "red"
-			case m.Players[1]:
+			case m.Opponent():
 				out[i][j] = "blue"
-			case m.Players[1]:
+			default:
 				out[i][j] = "none"
 			}
 		}

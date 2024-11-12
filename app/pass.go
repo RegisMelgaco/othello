@@ -6,7 +6,7 @@ import (
 )
 
 func (a *App) pass(http.ResponseWriter, *http.Request) {
-	entity.PassAction{
-		Author: a.match.Players[0],
-	}.Commit(a.match)
+	a.match.Commit(entity.PassAction{
+		Author: a.match.Self(),
+	})
 }

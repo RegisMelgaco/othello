@@ -6,16 +6,16 @@ import (
 )
 
 type Action interface {
-	Commit(*Match)
-	HasTurn(*Match) bool
+	commit(*Match) error
+	author() PlayerName
 }
 
 type Authory struct {
 	Author PlayerName
 }
 
-func (a Authory) HasTurn(m *Match) bool {
-	return a.Author == m.TurnOwner
+func (a Authory) author() PlayerName {
+	return a.Author
 }
 
 type BoardPosition struct {
@@ -29,9 +29,9 @@ type PlaceAction struct {
 	Val PlayerName
 }
 
-func (a PlaceAction) Commit(m *Match) {
-	m.IfHasTurn(a, func() {
-		m.Board.Grid[a.Pos.X][a.Pos.Y] = a.Val
+func (a PlaceAction) commit(m *Match) error {
+	return m.withAuthory(a, func() {
+		m.board.Grid[a.Pos.X][a.Pos.Y] = a.Val
 	})
 }
 
@@ -40,9 +40,9 @@ type RemoveAction struct {
 	Pos BoardPosition
 }
 
-func (a RemoveAction) Commit(m *Match) {
-	m.IfHasTurn(a, func() {
-		m.Board.Grid[a.Pos.X][a.Pos.Y] = EmptyColor
+func (a RemoveAction) commit(m *Match) error {
+	return m.withAuthory(a, func() {
+		m.board.Grid[a.Pos.X][a.Pos.Y] = EmptyColor
 	})
 }
 
@@ -52,14 +52,14 @@ type PassAction struct {
 	Next   PlayerName
 }
 
-func (a PassAction) Commit(m *Match) {
-	m.TurnOwner = a.Next
+func (a PassAction) commit(m *Match) error {
+	m.turnOwner = a.Next
 
-	MessageAction{
+	return MessageAction{
 		Authory:   a.Authory,
 		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf("passou a vez para %s", m.TurnOwner),
-	}.Commit(m)
+		Text:      fmt.Sprintf("passou a vez para %s", m.turnOwner),
+	}.commit(m)
 }
 
 type GiveUpAction struct {
@@ -67,8 +67,14 @@ type GiveUpAction struct {
 	Winner PlayerName
 }
 
-func (a GiveUpAction) Commit(m *Match) {
-	m.Winner = a.Winner
+func (a GiveUpAction) commit(m *Match) error {
+	m.winner = a.Winner
+
+	return MessageAction{
+		Authory:   a.Authory,
+		CreatedAt: time.Now(),
+		Text:      fmt.Sprintf("%s concedeu a vitoria a %s", a.Author, a.Winner),
+	}.commit(m)
 }
 
 type MessageAction struct {
@@ -77,12 +83,18 @@ type MessageAction struct {
 	Text      string
 }
 
-func (a MessageAction) Commit(m *Match) {
-	m.Chat = append(m.Chat, a)
+func (a MessageAction) commit(m *Match) error {
+	m.chat = append(m.chat, a)
+
+	return nil
 }
 
-func (m *Match) IfHasTurn(a Action, f func()) {
-	if a.HasTurn(m) {
-		f()
+func (m *Match) withAuthory(a Action, f func()) error {
+	if a.author() != m.turnOwner {
+		return fmt.Errorf("action author (%s) is not the turn owner %s", a.author())
 	}
+
+	f()
+
+	return nil
 }
