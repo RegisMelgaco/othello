@@ -1,0 +1,11 @@
+<div id="board">
+    {{ with $colors := getGridColors . }}
+    {{ range $i, $row := . }}
+    {{ range $j, $color := $row }}
+    <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board"  class="board-position">
+        <div class="circle" style="background-color: {{ $color }}"></div>
+    </div>
+    {{ end }}
+    {{ end }}
+    {{ end }}
+</div>

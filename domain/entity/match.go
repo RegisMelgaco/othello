@@ -13,6 +13,7 @@ type Match struct {
 	board     *Board
 	chat      []MessageAction
 	winner    PlayerName
+	onCommit  []func(Action)
 }
 
 func NewMatch(self, opponent PlayerName) *Match {
@@ -22,12 +23,16 @@ func NewMatch(self, opponent PlayerName) *Match {
 		self:     self,
 		chat: []MessageAction{
 			{
-				Authory:   Authory{Author: "notas"},
+				Authory:   Authory{"notas"},
 				CreatedAt: time.Now(),
 				Text:      "Suas peças são marcadas em vermelho e as do oponente em azul.\nPara trocar o valor de uma possição, basta clicar nela até que se obtenha o valor desejado.\nAo clickar em uma posição vazia, é colocada uma peça vermelha, ao clickar em uma vermelha ela é trocada por uma azul, e ao clickar em uma peça azul a peça é removida.",
 			},
 		},
 	}
+}
+
+func (m *Match) OnCommit(fs ...func(Action)) {
+	m.onCommit = append(m.onCommit, fs...)
 }
 
 func (m *Match) Commit(act Action) {
@@ -36,7 +41,13 @@ func (m *Match) Commit(act Action) {
 		return
 	}
 
+	slog.Info("actions commited", slog.Any("action", act))
+
 	m.actions = append(m.actions, act)
+
+	for _, f := range m.onCommit {
+		f(act)
+	}
 }
 
 func (m *Match) HandleClick(pos BoardPosition) Action {

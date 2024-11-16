@@ -7,15 +7,19 @@ import (
 
 type Action interface {
 	commit(*Match) error
-	author() PlayerName
+	Author() PlayerName
 }
 
 type Authory struct {
-	Author PlayerName
+	author PlayerName
 }
 
-func (a Authory) author() PlayerName {
-	return a.Author
+func NewAuthor(p PlayerName) Authory {
+	return Authory{p}
+}
+
+func (a Authory) Author() PlayerName {
+	return a.author
 }
 
 type BoardPosition struct {
@@ -48,23 +52,20 @@ func (a RemoveAction) commit(m *Match) error {
 
 type PassAction struct {
 	Authory
-	Author PlayerName
-	Next   PlayerName
+	Next      PlayerName
+	CreatedAt time.Time
 }
 
 func (a PassAction) commit(m *Match) error {
 	m.turnOwner = a.Next
 
-	return MessageAction{
-		Authory:   a.Authory,
-		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf("passou a vez para %s", m.turnOwner),
-	}.commit(m)
+	return nil
 }
 
 type GiveUpAction struct {
 	Authory
-	Winner PlayerName
+	Winner    PlayerName
+	CreatedAt time.Time
 }
 
 func (a GiveUpAction) commit(m *Match) error {
@@ -90,8 +91,8 @@ func (a MessageAction) commit(m *Match) error {
 }
 
 func (m *Match) withAuthory(a Action, f func()) error {
-	if a.author() != m.turnOwner {
-		return fmt.Errorf("action author (%s) is not the turn owner %s", a.author())
+	if a.Author() != m.turnOwner {
+		return fmt.Errorf("action author (%s) is not the turn owner (%s)", a.Author(), m.turnOwner)
 	}
 
 	f()
