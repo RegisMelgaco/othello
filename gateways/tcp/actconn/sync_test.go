@@ -25,44 +25,17 @@ func Test_Sync(t *testing.T) {
 				CreatedAt: date,
 			}
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
+			in1, out1 := conn1.Sync()
+			in2, out2 := conn2.Sync()
 
-			err = conn1.Send(want)
-			require.NoError(t, err)
+			out1 <- want
+			assert.Equal(t, want, <-in2)
 
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out2 <- want
+			assert.Equal(t, want, <-in1)
 
-			ln, err = conn1.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			err = conn2.Send(want)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
-
-			ln, err = conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			err = conn1.Send(want)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out1 <- want
+			assert.Equal(t, want, <-in2)
 		})
 
 		t.Run("given MessageAction", func(t *testing.T) {
@@ -73,18 +46,11 @@ func Test_Sync(t *testing.T) {
 				CreatedAt: date,
 			}
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
+			_, out := conn1.Sync()
+			in, _ := conn2.Sync()
 
-			err = conn1.Send(want)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out <- want
+			assert.Equal(t, want, <-in)
 		})
 
 		t.Run("given GiveUpAction", func(t *testing.T) {
@@ -96,18 +62,11 @@ func Test_Sync(t *testing.T) {
 				CreatedAt: date,
 			}
 
-			err := conn1.Send(want)
-			require.NoError(t, err)
+			_, out := conn1.Sync()
+			in, _ := conn2.Sync()
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out <- want
+			assert.Equal(t, want, <-in)
 		})
 
 		t.Run("given PassAction", func(t *testing.T) {
@@ -119,18 +78,11 @@ func Test_Sync(t *testing.T) {
 				CreatedAt: date,
 			}
 
-			err := conn1.Send(want)
-			require.NoError(t, err)
+			_, out := conn1.Sync()
+			in, _ := conn2.Sync()
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out <- want
+			assert.Equal(t, want, <-in)
 		})
 
 		t.Run("given RemoveAction", func(t *testing.T) {
@@ -141,18 +93,11 @@ func Test_Sync(t *testing.T) {
 				Pos: entity.BoardPosition{X: 1, Y: 2},
 			}
 
-			err := conn1.Send(want)
-			require.NoError(t, err)
+			_, out := conn1.Sync()
+			in, _ := conn2.Sync()
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out <- want
+			assert.Equal(t, want, <-in)
 		})
 
 		t.Run("given PlaceAction", func(t *testing.T) {
@@ -164,18 +109,11 @@ func Test_Sync(t *testing.T) {
 				Val: timMaia.Author(),
 			}
 
-			err := conn1.Send(want)
-			require.NoError(t, err)
+			_, out := conn1.Sync()
+			in, _ := conn2.Sync()
 
-			ln, err := conn2.ListenActions(10 * time.Second)
-			require.NoError(t, err)
-
-			select {
-			case got := <-ln.Actions:
-				assert.Equal(t, want, got)
-			case err := <-ln.Errs:
-				assert.NoError(t, err)
-			}
+			out <- want
+			assert.Equal(t, want, <-in)
 		})
 	})
 }
