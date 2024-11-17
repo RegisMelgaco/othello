@@ -17,6 +17,54 @@ func Test_Sync(t *testing.T) {
 	t.Run("should recieve action", func(t *testing.T) {
 		t.Parallel()
 
+		t.Run("given multiple messages", func(t *testing.T) {
+			t.Parallel()
+			conn1, conn2 := newConnections(t)
+
+			want := &entity.MessageAction{
+				CreatedAt: date,
+			}
+
+			ln, err := conn2.ListenActions(10 * time.Second)
+			require.NoError(t, err)
+
+			err = conn1.Send(want)
+			require.NoError(t, err)
+
+			select {
+			case got := <-ln.Actions:
+				assert.Equal(t, want, got)
+			case err := <-ln.Errs:
+				assert.NoError(t, err)
+			}
+
+			ln, err = conn1.ListenActions(10 * time.Second)
+			require.NoError(t, err)
+
+			err = conn2.Send(want)
+			require.NoError(t, err)
+
+			select {
+			case got := <-ln.Actions:
+				assert.Equal(t, want, got)
+			case err := <-ln.Errs:
+				assert.NoError(t, err)
+			}
+
+			ln, err = conn2.ListenActions(10 * time.Second)
+			require.NoError(t, err)
+
+			err = conn1.Send(want)
+			require.NoError(t, err)
+
+			select {
+			case got := <-ln.Actions:
+				assert.Equal(t, want, got)
+			case err := <-ln.Errs:
+				assert.NoError(t, err)
+			}
+		})
+
 		t.Run("given MessageAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)

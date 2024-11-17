@@ -7,12 +7,12 @@ import (
 )
 
 type ActConn struct {
-	*textproto.Conn
+	conn *textproto.Conn
 }
 
 func NewActConn(conn net.Conn) *ActConn {
 	return &ActConn{
-		Conn: textproto.NewConn(conn),
+		conn: textproto.NewConn(conn),
 	}
 }
 

@@ -6,11 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"local/othello/domain/entity"
+	"log/slog"
 	"reflect"
 	"time"
 )
 
 func (c *ActConn) Send(action entity.Action) error {
+	slog.Debug("start conn send", slog.Any("action", action))
+
 	typeName := reflect.TypeOf(action).String()
 
 	enc, err := json.Marshal(action)
@@ -18,14 +21,21 @@ func (c *ActConn) Send(action entity.Action) error {
 		return fmt.Errorf("marshalling action for send: %w", err)
 	}
 
-	requestID := c.Pipeline.Next()
-	c.Pipeline.StartResponse(requestID)
-	defer c.Pipeline.EndResponse(requestID)
+	slog.Debug("conn write", slog.Any("action", action))
 
-	err = c.Writer.PrintfLine("%s|%s", typeName, string(enc))
+	id, err := c.conn.Cmd("%s|%s", typeName, string(enc))
 	if err != nil {
 		return fmt.Errorf("writing action to connection: %w", err)
 	}
+
+	c.conn.StartResponse(id)
+	defer c.conn.EndResponse(id)
+
+	if _, err := c.conn.ReadLine(); err != nil {
+		return err
+	}
+
+	slog.Info("action sent", slog.Any("action", action))
 
 	return nil
 }
@@ -69,12 +79,12 @@ func (c *ActConn) readAction(timeout time.Duration) (entity.Action, error) {
 
 	readErr := make(chan error)
 	go func() {
-		requestID := c.Pipeline.Next()
-		c.StartRequest(requestID)
-		defer c.EndRequest(requestID)
+		requestID := c.conn.Pipeline.Next()
+		c.conn.StartRequest(requestID)
+		defer c.conn.EndRequest(requestID)
 
 		var err error
-		data, err = c.Reader.ReadLineBytes()
+		data, err = c.conn.Reader.ReadLineBytes()
 		readErr <- err
 	}()
 
@@ -86,6 +96,8 @@ func (c *ActConn) readAction(timeout time.Duration) (entity.Action, error) {
 	case <-ctx.Done():
 		return nil, fmt.Errorf("reading action from connection: %w", ctx.Err())
 	}
+
+	slog.Info("msg recieved", slog.String("data", string(data)))
 
 	bs := bytes.Split(data, []byte("|"))
 	if len(bs) != 2 {

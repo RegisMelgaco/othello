@@ -74,7 +74,7 @@ func (a GiveUpAction) commit(m *Match) error {
 	return MessageAction{
 		Authory:   a.Authory,
 		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf("%s concedeu a vitoria a %s", a.Author, a.Winner),
+		Text:      fmt.Sprintf("%s concedeu a vitoria a %s", a.Author(), a.Winner),
 	}.commit(m)
 }
 

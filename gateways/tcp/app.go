@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"html/template"
 	"local/othello/domain/entity"
-	"net/textproto"
 )
 
 type App struct {
 	match  *entity.Match
-	conn   *textproto.Conn
 	templs struct {
 		game      *template.Template
 		home      *template.Template

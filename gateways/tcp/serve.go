@@ -17,7 +17,7 @@ func (a *App) Serve(address string) {
 	mux := chi.NewMux().With(middleware.Logger).With(middleware.Recoverer)
 
 	mux.HandleFunc("GET /", a.getHome)
-	mux.HandleFunc("GET /game", a.getGame)
+	mux.HandleFunc("GET /game", a.createGame)
 	mux.HandleFunc("PUT /game", a.updateGame)
 	mux.HandleFunc("GET /chat", a.getChat)
 	mux.HandleFunc("PUT /chat", a.updateChat)

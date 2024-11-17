@@ -11,15 +11,11 @@
 <body>
     <form hx-get="/game" hx-swap="outerHTML">
         <h1>Iniciar Jogo</h1>
-        
+
         <h2>Meu</h2>
         <div class="form-group">
             <label>Nome</label>
             <input type="text" name="self-name" value="Jogador 1">
-        </div>
-        <div class="form-group">
-            <label>Porta</label>
-            <input type="text" name="self-port" value="3000">
         </div>
 
         <h2>Dupla</h2>
@@ -27,22 +23,42 @@
             <label>Nome</label>
             <input type="text" name="peer-name" value="Jogador 2">
         </div>
-        <div>
+
+        <h2>Conexão</h2>
+        <div class="form-group">
             <label>IP</label>
-            <input type="text" name="peer-ip" value="127.0.0.1">
+            <input type="text" name="ip" value="127.0.0.1">
         </div>
         <div class="form-group">
             <label>Porta</label>
-            <input type="text" name="peer-port" value="3000">
+            <input type="text" name="port" value="3000">
+        </div>
+        <div class="form-group">
+            <label>Escutar porta</label>
+            <input type="checkbox" name="listen">
         </div>
 
-        <button type="submit">Iniciar</button>
+        <div class="form-group">
+            <button type="submit">Conectar</button>
+
+            <img style="height: 5rem;" class="htmx-indicator" src="/static/spinner.gif">
+        </div>
     </form>
 </body>
 
 </html>
 
 <style>
+    body {
+        margin: 6rem 4rem;
+    }
+
+    .form-group {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin: .5rem;
+    }
     .notification {
         opacity: 0;
         transition: opacity 10s;

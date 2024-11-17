@@ -10,6 +10,10 @@ import (
 )
 
 func (a *App) getChat(w http.ResponseWriter, _ *http.Request) {
+	if a.match == nil {
+		return
+	}
+
 	msgs := slices.Clone(a.match.Chat())
 	slices.Reverse(msgs)
 	err := a.templs.chatMsgs.Execute(w, msgs)
