@@ -21,7 +21,7 @@ func Test_Sync(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.MessageAction{
+			want := entity.MessageAction{
 				CreatedAt: date,
 			}
 
@@ -29,35 +29,37 @@ func Test_Sync(t *testing.T) {
 			in2, out2 := conn2.Sync()
 
 			out1 <- want
-			assert.Equal(t, want, <-in2)
+			assert.Equal(t, &want, <-in2)
 
 			out2 <- want
-			assert.Equal(t, want, <-in1)
+			assert.Equal(t, &want, <-in1)
 
 			out1 <- want
-			assert.Equal(t, want, <-in2)
+			assert.Equal(t, &want, <-in2)
 		})
 
 		t.Run("given MessageAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.MessageAction{
+			want := entity.MessageAction{
+				Authory:   entity.NewAuthor("Tim Maia"),
 				CreatedAt: date,
+				Text:      "hummmm",
 			}
 
 			_, out := conn1.Sync()
 			in, _ := conn2.Sync()
 
 			out <- want
-			assert.Equal(t, want, <-in)
+			assert.Equal(t, &want, <-in)
 		})
 
 		t.Run("given GiveUpAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.GiveUpAction{
+			want := entity.GiveUpAction{
 				Winner:    timMaia.Author(),
 				CreatedAt: date,
 			}
@@ -66,14 +68,14 @@ func Test_Sync(t *testing.T) {
 			in, _ := conn2.Sync()
 
 			out <- want
-			assert.Equal(t, want, <-in)
+			assert.Equal(t, &want, <-in)
 		})
 
 		t.Run("given PassAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.PassAction{
+			want := entity.PassAction{
 				Next:      timMaia.Author(),
 				CreatedAt: date,
 			}
@@ -82,14 +84,14 @@ func Test_Sync(t *testing.T) {
 			in, _ := conn2.Sync()
 
 			out <- want
-			assert.Equal(t, want, <-in)
+			assert.Equal(t, &want, <-in)
 		})
 
 		t.Run("given RemoveAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.RemoveAction{
+			want := entity.RemoveAction{
 				Pos: entity.BoardPosition{X: 1, Y: 2},
 			}
 
@@ -97,14 +99,14 @@ func Test_Sync(t *testing.T) {
 			in, _ := conn2.Sync()
 
 			out <- want
-			assert.Equal(t, want, <-in)
+			assert.Equal(t, &want, <-in)
 		})
 
 		t.Run("given PlaceAction", func(t *testing.T) {
 			t.Parallel()
 			conn1, conn2 := newConnections(t)
 
-			want := &entity.PlaceAction{
+			want := entity.PlaceAction{
 				Pos: entity.BoardPosition{X: 1, Y: 2},
 				Val: timMaia.Author(),
 			}
@@ -113,7 +115,7 @@ func Test_Sync(t *testing.T) {
 			in, _ := conn2.Sync()
 
 			out <- want
-			assert.Equal(t, want, <-in)
+			assert.Equal(t, &want, <-in)
 		})
 	})
 }

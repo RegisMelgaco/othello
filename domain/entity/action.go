@@ -6,12 +6,12 @@ import (
 )
 
 type Action interface {
-	commit(*Match) error
 	Author() PlayerName
+	commit(*Match) error
 }
 
 type Authory struct {
-	author PlayerName
+	Name PlayerName
 }
 
 func NewAuthor(p PlayerName) Authory {
@@ -19,7 +19,7 @@ func NewAuthor(p PlayerName) Authory {
 }
 
 func (a Authory) Author() PlayerName {
-	return a.author
+	return a.Name
 }
 
 type BoardPosition struct {
@@ -57,7 +57,13 @@ type PassAction struct {
 }
 
 func (a PassAction) commit(m *Match) error {
-	m.turnOwner = a.Next
+	m.TurnOwner = a.Next
+
+	m.Commit(MessageAction{
+		Authory:   NewAuthor("jogo"),
+		CreatedAt: time.Now(),
+		Text:      fmt.Sprintf(`"%s" passou a vez para "%s"`, a.Author(), a.Next),
+	})
 
 	return nil
 }
@@ -69,13 +75,15 @@ type GiveUpAction struct {
 }
 
 func (a GiveUpAction) commit(m *Match) error {
-	m.winner = a.Winner
+	m.winner = &a.Winner
 
-	return MessageAction{
-		Authory:   a.Authory,
+	m.Commit(MessageAction{
+		Authory:   NewAuthor("jogo"),
 		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf("%s concedeu a vitoria a %s", a.Author(), a.Winner),
-	}.commit(m)
+		Text:      fmt.Sprintf(`"%s" concedeu a vitoria a "%s"`, a.Author(), a.Winner),
+	})
+
+	return nil
 }
 
 type MessageAction struct {
@@ -91,8 +99,8 @@ func (a MessageAction) commit(m *Match) error {
 }
 
 func (m *Match) withAuthory(a Action, f func()) error {
-	if a.Author() != m.turnOwner {
-		return fmt.Errorf("action author (%s) is not the turn owner (%s)", a.Author(), m.turnOwner)
+	if a.Author() != m.TurnOwner {
+		return fmt.Errorf("action author (%s) is not the turn owner (%s)", a.Author(), m.TurnOwner)
 	}
 
 	f()

@@ -3,6 +3,8 @@ package actconn
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 	"local/othello/domain/entity"
 	"log/slog"
 	"reflect"
@@ -50,7 +52,20 @@ func (c *ActConn) write(action entity.Action) {
 }
 
 func (c *ActConn) read() entity.Action {
-	data, err := c.conn.Reader.ReadLineBytes()
+	var (
+		data []byte
+		err  error
+	)
+
+	for {
+		data, err = c.conn.Reader.ReadLineBytes()
+		if err != nil && errors.Is(err, io.EOF) {
+			continue
+		}
+
+		break
+	}
+
 	if err != nil {
 		slog.Error("reading from connection", slog.String("err", err.Error()))
 
@@ -93,9 +108,9 @@ func (c *ActConn) read() entity.Action {
 }
 
 var actionMap = map[string]reflect.Type{
-	reflect.TypeFor[*entity.MessageAction]().String(): reflect.TypeFor[entity.MessageAction](),
-	reflect.TypeFor[*entity.GiveUpAction]().String():  reflect.TypeFor[entity.GiveUpAction](),
-	reflect.TypeFor[*entity.PassAction]().String():    reflect.TypeFor[entity.PassAction](),
-	reflect.TypeFor[*entity.RemoveAction]().String():  reflect.TypeFor[entity.RemoveAction](),
-	reflect.TypeFor[*entity.PlaceAction]().String():   reflect.TypeFor[entity.PlaceAction](),
+	reflect.TypeFor[entity.MessageAction]().String(): reflect.TypeFor[entity.MessageAction](),
+	reflect.TypeFor[entity.GiveUpAction]().String():  reflect.TypeFor[entity.GiveUpAction](),
+	reflect.TypeFor[entity.PassAction]().String():    reflect.TypeFor[entity.PassAction](),
+	reflect.TypeFor[entity.RemoveAction]().String():  reflect.TypeFor[entity.RemoveAction](),
+	reflect.TypeFor[entity.PlaceAction]().String():   reflect.TypeFor[entity.PlaceAction](),
 }

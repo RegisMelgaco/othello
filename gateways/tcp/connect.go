@@ -1,11 +1,11 @@
 package tcp
 
 import (
+	"fmt"
 	"local/othello/domain/entity"
 	"local/othello/gateways/tcp/actconn"
 	"log/slog"
 	"net/http"
-	"time"
 )
 
 func (a *App) connect(r *http.Request) error {
@@ -36,37 +36,31 @@ func (a *App) connect(r *http.Request) error {
 		}
 	}
 
+	if isServer {
+		a.match.TurnOwner = a.match.Self()
+	} else {
+		a.match.TurnOwner = a.match.Opponent()
+	}
+
+	a.match.Commit(entity.MessageAction{
+		Authory: entity.NewAuthor("jogo"),
+		Text:    fmt.Sprintf(`jogador "%s" joga primeiro`, a.match.TurnOwner),
+	})
+
+	in, out := conn.Sync()
+
 	a.match.OnCommit(func(action entity.Action) {
 		slog.Debug("on commit", slog.Any("action", action))
 		if action.Author() != a.match.Self() {
 			return
 		}
 
-		err := conn.Send(action)
-		if err != nil {
-			slog.Error("send action", slog.String("err", err.Error()))
-
-			return
-		}
+		out <- action
 	})
-
-	ln, err := conn.ListenActions(5 * time.Minute)
-	if err != nil {
-		return err
-	}
 
 	go func() {
 		for a.match != nil {
-			select {
-			case action := <-ln.Actions:
-				a.match.Commit(action)
-			case err := <-ln.Errs:
-				a.match.Commit(entity.MessageAction{
-					Authory:   entity.NewAuthor("servidor"),
-					CreatedAt: time.Now(),
-					Text:      err.Error(),
-				})
-			}
+			a.match.Commit(<-in)
 		}
 	}()
 

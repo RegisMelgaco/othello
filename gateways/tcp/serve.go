@@ -19,10 +19,11 @@ func (a *App) Serve(address string) {
 	mux.HandleFunc("GET /", a.getHome)
 	mux.HandleFunc("GET /game", a.createGame)
 	mux.HandleFunc("PUT /game", a.updateGame)
+	mux.HandleFunc("GET /grid", a.getGrid)
 	mux.HandleFunc("GET /chat", a.getChat)
 	mux.HandleFunc("PUT /chat", a.updateChat)
 	mux.HandleFunc("PUT /pass", a.pass)
-	mux.HandleFunc("PUT /giveup", a.pass)
+	mux.HandleFunc("PUT /giveup", a.giveUp)
 
 	fs := http.FileServerFS(static.FS)
 	mux.HandleFunc("GET /static/*", func(w http.ResponseWriter, r *http.Request) {

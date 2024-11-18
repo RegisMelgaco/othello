@@ -17,11 +17,9 @@ func (a *App) getChat(w http.ResponseWriter, _ *http.Request) {
 	msgs := slices.Clone(a.match.Chat())
 	slices.Reverse(msgs)
 	err := a.templs.chatMsgs.Execute(w, msgs)
-	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
 
-		return
+	if err != nil {
+		slog.Error("executing chatMsgs template", slog.String("err", err.Error()))
 	}
 }
 

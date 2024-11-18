@@ -1,18 +1,19 @@
 package entity
 
 import (
+	"fmt"
 	"log/slog"
 	"time"
 )
 
 type Match struct {
-	turnOwner PlayerName
+	TurnOwner PlayerName
 	self      PlayerName
 	opponent  PlayerName
 	actions   []Action
 	board     *Board
 	chat      []MessageAction
-	winner    PlayerName
+	winner    *PlayerName
 	onCommit  []func(Action)
 }
 
@@ -23,7 +24,7 @@ func NewMatch(self, opponent PlayerName) *Match {
 		self:     self,
 		chat: []MessageAction{
 			{
-				Authory:   Authory{"notas"},
+				Authory:   NewAuthor("jogo"),
 				CreatedAt: time.Now(),
 				Text:      "Suas peças são marcadas em vermelho e as do oponente em azul.\nPara trocar o valor de uma possição, basta clicar nela até que se obtenha o valor desejado.\nAo clickar em uma posição vazia, é colocada uma peça vermelha, ao clickar em uma vermelha ela é trocada por uma azul, e ao clickar em uma peça azul a peça é removida.",
 			},
@@ -48,6 +49,17 @@ func (m *Match) Commit(act Action) {
 	for _, f := range m.onCommit {
 		f(act)
 	}
+
+	if m.winner != nil {
+		return
+	}
+
+	m.winner = m.FindWinner()
+
+	m.Commit(MessageAction{
+		Authory: NewAuthor("jogo"),
+		Text:    fmt.Sprintf(`O vencedor é "%s"`, *m.winner),
+	})
 }
 
 func (m *Match) HandleClick(pos BoardPosition) Action {
@@ -57,26 +69,24 @@ func (m *Match) HandleClick(pos BoardPosition) Action {
 	switch current {
 	case m.self:
 		act = PlaceAction{
-			Authory: Authory{m.self},
+			Authory: NewAuthor(m.self),
 			Val:     m.opponent,
 			Pos:     pos,
 		}
 	case m.opponent:
 		act = RemoveAction{
-			Authory: Authory{m.self},
+			Authory: NewAuthor(m.self),
 			Pos:     pos,
 		}
 	default:
 		act = PlaceAction{
-			Authory: Authory{m.self},
+			Authory: NewAuthor(m.self),
 			Val:     m.self,
 			Pos:     pos,
 		}
 	}
 
-	act.commit(m)
-
-	slog.Debug("HandleClick", slog.Any("board", m.board.Grid))
+	m.Commit(act)
 
 	return act
 }

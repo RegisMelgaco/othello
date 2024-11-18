@@ -2,15 +2,12 @@
 
 <section class="hud">
     <section>
-        <div id="board">
-            {{ with $colors := getGridColors . }}
-            {{ range $i, $row := . }}
+        <div id="board" hx-get="/grid" hx-trigger="every 1s " hx-swap="innerHTML">
+            {{ range $i, $row := .Grid }}
             {{ range $j, $color := $row }}
-            <div hx-include="this" hx-put="/game?pos-x={{ $i }}&pos-y={{ $j }}" hx-target="#board"
-                class="board-position">
-                <div class="circle" style="background-color: {{ $color }}"></div>
+            <div class="board-position">
+                <div class="circle"></div>
             </div>
-            {{ end }}
             {{ end }}
             {{ end }}
         </div>
