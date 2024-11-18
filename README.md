@@ -1,12 +1,13 @@
-# othello
+# Executar
 
-## Run on docker
+## Com Docker
+```
+docker compose up
+```
+**resultado**: duas aplicações rodando com client web disponíveis na porta 4000 e 4001
 
-docker run -it --rm \
-    -w "othello" \
-    -e "air_wd=othello" \
-    -v $(pwd):othello \
-    -p 3001:3000 \
-    -p 8081:8080 \
-    cosmtrek/air
-    -c .air.toml
+## Via binário
+```
+go run app/main.go -addr :4001
+```
+**resultado**: uma aplicação rodando com client web disponíveis na porta 4001
