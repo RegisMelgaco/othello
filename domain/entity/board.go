@@ -36,17 +36,12 @@ func (m *Match) FindWinner() *PlayerName {
 		}
 	}
 
-	var (
-		winner      PlayerName
-		winnerCount int
-	)
-	for p, c := range count {
-		if c > winnerCount {
-			winner = p
-		}
+	w := m.self
+	if count[m.self] < count[m.opponent] {
+		w = m.opponent
 	}
 
-	return &winner
+	return &w
 }
 
 func (m *Match) Grid() [][]PlayerName {
