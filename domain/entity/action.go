@@ -75,8 +75,6 @@ type GiveUpAction struct {
 }
 
 func (a GiveUpAction) commit(m *Match) error {
-	m.winner = &a.Winner
-
 	m.Commit(MessageAction{
 		Authory:   NewAuthor("jogo"),
 		CreatedAt: time.Now(),

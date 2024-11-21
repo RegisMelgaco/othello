@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 )
 
@@ -13,8 +14,8 @@ type Match struct {
 	actions   []Action
 	board     *Board
 	chat      []MessageAction
-	winner    *PlayerName
 	onCommit  []func(Action)
+	winOnce   sync.Once
 }
 
 func NewMatch(self, opponent PlayerName) *Match {
@@ -50,16 +51,14 @@ func (m *Match) Commit(act Action) {
 		f(act)
 	}
 
-	if m.winner != nil {
-		return
+	if w := m.FindWinner(); w != nil {
+		m.winOnce.Do(func() {
+			m.Commit(MessageAction{
+				Authory: NewAuthor("jogo"),
+				Text:    fmt.Sprintf(`O vencedor é "%s"`, *w),
+			})
+		})
 	}
-
-	m.winner = m.FindWinner()
-
-	m.Commit(MessageAction{
-		Authory: NewAuthor("jogo"),
-		Text:    fmt.Sprintf(`O vencedor é "%s"`, *m.winner),
-	})
 }
 
 func (m *Match) HandleClick(pos BoardPosition) Action {
