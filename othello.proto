@@ -4,11 +4,36 @@ option go_package = "local/othello/gateways/grpc/gen";
 
 service othello {
   rpc place (placeRequest) returns (empty);
+  rpc remove(removeRequest) returns (empty);
+  rpc pass(passRequest) returns (empty);
+  rpc giveUp(giveUpRequest) returns (empty);
+  rpc message(messageRequest) returns (empty);
 }
 
 message placeRequest {
-  string value = 1;
+  string author = 1;
   coordinate position = 2;
+  string val = 3;
+}
+
+message removeRequest {
+  string author = 1;
+  coordinate position = 2;
+}
+
+message passRequest {
+  string author = 1;
+  string next = 2;
+}
+
+message giveUpRequest {
+  string author = 1;
+  string winner = 2;
+}
+
+message messageRequest {
+  string author = 1;
+  string text = 2;
 }
 
 message coordinate {
