@@ -1,0 +1,19 @@
+syntax="proto3";
+
+option go_package = "local/othello/gateways/grpc/gen";
+
+service othello {
+  rpc place (placeRequest) returns (empty);
+}
+
+message placeRequest {
+  string value = 1;
+  coordinate position = 2;
+}
+
+message coordinate {
+  int64 x = 1;
+  int64 y = 2;
+}
+
+message empty {}
