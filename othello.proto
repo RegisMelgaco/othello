@@ -1,37 +1,43 @@
 syntax="proto3";
 
-option go_package = "local/othello/gateways/grpc/gen";
+option go_package = "local/othello/gateways/grpc/actsync/gen";
 
 service othello {
-  rpc place (placeRequest) returns (empty);
-  rpc remove(removeRequest) returns (empty);
-  rpc pass(passRequest) returns (empty);
-  rpc giveUp(giveUpRequest) returns (empty);
-  rpc message(messageRequest) returns (empty);
+  rpc sync(action) returns (empty);
 }
 
-message placeRequest {
+message action {
+  oneof val {
+    placeAction place = 1;
+    removeAction remove = 2;
+    passAction pass = 3;
+    giveUpAction giveUp = 4;
+    messageAction message = 5;
+  }
+}
+
+message placeAction {
   string author = 1;
   coordinate position = 2;
   string val = 3;
 }
 
-message removeRequest {
+message removeAction {
   string author = 1;
   coordinate position = 2;
 }
 
-message passRequest {
+message passAction {
   string author = 1;
   string next = 2;
 }
 
-message giveUpRequest {
+message giveUpAction {
   string author = 1;
   string winner = 2;
 }
 
-message messageRequest {
+message messageAction {
   string author = 1;
   string text = 2;
 }

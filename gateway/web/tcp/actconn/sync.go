@@ -2,10 +2,10 @@ package actconn
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"errors"
-	"io"
 	"local/othello/domain/entity"
+	"local/othello/gateway/grpc/gen"
 	"log/slog"
 	"reflect"
 )
@@ -32,39 +32,62 @@ func (c *ActConn) Sync() (incomming, outgoing chan entity.Action) {
 }
 
 func (c *ActConn) write(action entity.Action) {
-	typeName := reflect.TypeOf(action).String()
-
-	enc, err := json.Marshal(action)
-	if err != nil {
-		slog.Error("marshalling action for send", slog.String("err", err.Error()))
-
-		return
+	var act gen.Action
+	switch t := action.(type) {
+	case entity.PlaceAction:
+		act.Val = &gen.Action_Place{
+			Place: &gen.PlaceAction{
+				Author: string(t.Author()),
+				Position: &gen.Coordinate{
+					X: int64(t.Pos.X),
+					Y: int64(t.Pos.Y),
+				},
+				Val: string(t.Val),
+			},
+		}
+	case entity.GiveUpAction:
+		act.Val = &gen.Action_GiveUp{
+			GiveUp: &gen.GiveUpAction{
+				Author: string(t.Author()),
+				Winner: string(t.Winner),
+			},
+		}
+	case entity.MessageAction:
+		act.Val = &gen.Action_Message{
+			Message: &gen.MessageAction{
+				Author: string(t.Author()),
+				Text:   t.Text,
+			},
+		}
+	case entity.PassAction:
+		act.Val = &gen.Action_Pass{
+			Pass: &gen.PassAction{
+				Author: string(t.Author()),
+				Next:   string(t.Next),
+			},
+		}
+	case entity.RemoveAction:
+		act.Val = &gen.Action_Remove{
+			Remove: &gen.RemoveAction{
+				Author: string(t.Author()),
+				Position: &gen.Coordinate{
+					X: int64(t.Pos.X),
+					Y: int64(t.Pos.Y),
+				},
+			},
+		}
+	default:
+		panic("action not implemented")
 	}
 
-	err = c.conn.PrintfLine("%s|%s", typeName, string(enc))
+	_, err := c.cli.Sync(context.Background(), &act)
 	if err != nil {
-		slog.Error("writing action to connection", slog.String("err", err.Error()))
-
-		return
+		slog.Error("grpc client: sync request", slog.String("err", err.Error()))
 	}
-
-	slog.Info("action sent", slog.Any("action", action))
 }
 
 func (c *ActConn) read() entity.Action {
-	var (
-		data []byte
-		err  error
-	)
-
-	for {
-		data, err = c.conn.Reader.ReadLineBytes()
-		if err != nil && errors.Is(err, io.EOF) {
-			continue
-		}
-
-		break
-	}
+  c.cli.
 
 	if err != nil {
 		slog.Error("reading from connection", slog.String("err", err.Error()))
