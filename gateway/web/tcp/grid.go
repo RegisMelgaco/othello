@@ -13,7 +13,7 @@ func (a *App) getGrid(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func getGridColors(m entity.Match) [][]string {
+func getGridColors(m *entity.Match) [][]string {
 	out := make([][]string, 8)
 	for i, row := range m.Grid() {
 		out[i] = make([]string, 8)

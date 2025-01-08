@@ -3,40 +3,26 @@ package tcp
 import (
 	"fmt"
 	"local/othello/domain/entity"
-	"local/othello/gateways/tcp/actconn"
+	"local/othello/gateway/grpc"
 	"log/slog"
 	"net/http"
+	"strconv"
 )
 
 func (a *App) connect(r *http.Request) error {
 	ip := r.FormValue("ip")
-	port := r.FormValue("port")
-	isServer := r.FormValue("listen") == "on"
-
-	var (
-		conn *actconn.ActConn
-		err  error
-	)
-
-	if !isServer {
-		conn, err = actconn.Dial(ip, port)
-		if err != nil {
-			return err
-		}
-	} else {
-		connChan, errChan := actconn.Listen(port)
-
-		select {
-		case err = <-errChan:
-		case conn = <-connChan:
-		}
-
-		if err != nil {
-			return err
-		}
+	port, err := strconv.Atoi(r.FormValue("port"))
+	if err != nil {
+		panic(err)
 	}
 
-	if isServer {
+	conn := grpc.NewConn(grpc.ConnOpts{
+		ListenPort:  port,
+		DialAddress: ip,
+		DialPort:    port,
+	})
+
+	if a.match.Self() < a.match.Opponent() {
 		a.match.TurnOwner = a.match.Self()
 	} else {
 		a.match.TurnOwner = a.match.Opponent()
@@ -47,22 +33,18 @@ func (a *App) connect(r *http.Request) error {
 		Text:    fmt.Sprintf(`jogador "%s" joga primeiro`, a.match.TurnOwner),
 	})
 
-	in, out := conn.Sync()
-
 	a.match.OnCommit(func(action entity.Action) {
 		slog.Debug("on commit", slog.Any("action", action))
 		if action.Author() != a.match.Self() {
 			return
 		}
 
-		out <- action
+		conn.Send(action)
 	})
 
-	go func() {
-		for a.match != nil {
-			a.match.Commit(<-in)
-		}
-	}()
+	conn.OnRecv(func(action entity.Action) {
+		a.match.Commit(action)
+	})
 
 	return nil
 }

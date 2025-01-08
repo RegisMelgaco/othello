@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
-	"time"
 )
 
 type Match struct {
@@ -25,9 +24,8 @@ func NewMatch(self, opponent PlayerName) *Match {
 		self:     self,
 		chat: []MessageAction{
 			{
-				Authory:   NewAuthor("jogo"),
-				CreatedAt: time.Now(),
-				Text:      "Suas peças são marcadas em vermelho e as do oponente em azul.\nPara trocar o valor de uma possição, basta clicar nela até que se obtenha o valor desejado.\nAo clickar em uma posição vazia, é colocada uma peça vermelha, ao clickar em uma vermelha ela é trocada por uma azul, e ao clickar em uma peça azul a peça é removida.",
+				Authory: NewAuthor("jogo"),
+				Text:    "Suas peças são marcadas em vermelho e as do oponente em azul.\nPara trocar o valor de uma possição, basta clicar nela até que se obtenha o valor desejado.\nAo clickar em uma posição vazia, é colocada uma peça vermelha, ao clickar em uma vermelha ela é trocada por uma azul, e ao clickar em uma peça azul a peça é removida.",
 			},
 		},
 	}

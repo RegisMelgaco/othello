@@ -2,7 +2,7 @@ package tcp
 
 import (
 	"fmt"
-	"local/othello/gateways/tcp/static"
+	"local/othello/gateway/web/tcp/static"
 	"log/slog"
 	"mime"
 	"net"

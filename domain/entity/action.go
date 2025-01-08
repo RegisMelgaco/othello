@@ -2,7 +2,6 @@ package entity
 
 import (
 	"fmt"
-	"time"
 )
 
 type Action interface {
@@ -29,8 +28,8 @@ type BoardPosition struct {
 
 type PlaceAction struct {
 	Authory
-	Pos BoardPosition
 	Val PlayerName
+	Pos BoardPosition
 }
 
 func (a PlaceAction) commit(m *Match) error {
@@ -52,17 +51,15 @@ func (a RemoveAction) commit(m *Match) error {
 
 type PassAction struct {
 	Authory
-	Next      PlayerName
-	CreatedAt time.Time
+	Next PlayerName
 }
 
 func (a PassAction) commit(m *Match) error {
 	m.TurnOwner = a.Next
 
 	m.Commit(MessageAction{
-		Authory:   NewAuthor("jogo"),
-		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf(`"%s" passou a vez para "%s"`, a.Author(), a.Next),
+		Authory: NewAuthor("jogo"),
+		Text:    fmt.Sprintf(`"%s" passou a vez para "%s"`, a.Author(), a.Next),
 	})
 
 	return nil
@@ -70,15 +67,13 @@ func (a PassAction) commit(m *Match) error {
 
 type GiveUpAction struct {
 	Authory
-	Winner    PlayerName
-	CreatedAt time.Time
+	Winner PlayerName
 }
 
 func (a GiveUpAction) commit(m *Match) error {
 	m.Commit(MessageAction{
-		Authory:   NewAuthor("jogo"),
-		CreatedAt: time.Now(),
-		Text:      fmt.Sprintf(`"%s" concedeu a vitoria a "%s"`, a.Author(), a.Winner),
+		Authory: NewAuthor("jogo"),
+		Text:    fmt.Sprintf(`"%s" concedeu a vitoria a "%s"`, a.Author(), a.Winner),
 	})
 
 	return nil
@@ -86,8 +81,7 @@ func (a GiveUpAction) commit(m *Match) error {
 
 type MessageAction struct {
 	Authory
-	CreatedAt time.Time
-	Text      string
+	Text string
 }
 
 func (a MessageAction) commit(m *Match) error {

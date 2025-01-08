@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"local/othello/gateways/tcp"
+	"local/othello/gateway/web/tcp"
 	"log/slog"
 	"os"
 )

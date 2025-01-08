@@ -1,68 +1,28 @@
 package grpc
 
 import (
-	"context"
-	"local/othello/domain/entity"
-	"local/othello/gateways/grpc/gen"
+	"local/othello/gateway/grpc/gen"
+
+	"google.golang.org/grpc"
 )
 
-type Server struct {
+type Service struct {
 	gen.UnimplementedOthelloServer
-	match *entity.Match
+	stream chan grpc.BidiStreamingServer[gen.Action, gen.Action]
 }
 
-func NewServer(m *entity.Match) *Server {
-	return &Server{match: m}
+var _ gen.OthelloServer = &Service{}
+
+func NewService() *Service {
+	return &Service{
+		stream: make(chan grpc.BidiStreamingServer[gen.Action, gen.Action]),
+	}
 }
 
-func (s *Server) Place(_ context.Context, req *gen.PlaceRequest) (*gen.Empty, error) {
-	s.match.Commit(entity.PlaceAction{
-		Authory: entity.NewAuthor(entity.PlayerName(req.GetAuthor())),
-		Pos: entity.BoardPosition{
-			X: int(req.GetPosition().GetX()),
-			Y: int(req.GetPosition().GetY()),
-		},
-		Val: entity.PlayerName(req.GetVal()),
-	})
+func (s *Service) Sync(stream grpc.BidiStreamingServer[gen.Action, gen.Action]) error {
+	s.stream <- stream
 
-	return nil, nil
-}
+	<-s.stream
 
-func (s *Server) Remove(_ context.Context, req *gen.RemoveRequest) (*gen.Empty, error) {
-	s.match.Commit(entity.RemoveAction{
-		Authory: entity.NewAuthor(entity.PlayerName(req.GetAuthor())),
-		Pos: entity.BoardPosition{
-			X: int(req.GetPosition().X),
-			Y: int(req.GetPosition().Y),
-		},
-	})
-
-	return nil, nil
-}
-
-func (s *Server) Pass(_ context.Context, req *gen.PassRequest) (*gen.Empty, error) {
-	s.match.Commit(entity.PassAction{
-		Authory: entity.NewAuthor(entity.PlayerName(req.GetAuthor())),
-		Next:    entity.PlayerName(req.Next),
-	})
-
-	return nil, nil
-}
-
-func (s *Server) GiveUp(_ context.Context, req *gen.GiveUpRequest) (*gen.Empty, error) {
-	s.match.Commit(entity.GiveUpAction{
-		Authory: entity.NewAuthor(entity.PlayerName(req.GetAuthor())),
-		Winner:  entity.PlayerName(req.GetWinner()),
-	})
-
-	return nil, nil
-}
-
-func (s *Server) Message(_ context.Context, req *gen.MessageRequest) (*gen.Empty, error) {
-	s.match.Commit(entity.MessageAction{
-		Authory: entity.NewAuthor(entity.PlayerName(req.GetAuthor())),
-		Text:    req.GetText(),
-	})
-
-	return nil, nil
+	return nil
 }

@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"net/http"
 	"slices"
-	"time"
 )
 
 func (a *App) getChat(w http.ResponseWriter, _ *http.Request) {
@@ -17,7 +16,6 @@ func (a *App) getChat(w http.ResponseWriter, _ *http.Request) {
 	msgs := slices.Clone(a.match.Chat())
 	slices.Reverse(msgs)
 	err := a.templs.chatMsgs.Execute(w, msgs)
-
 	if err != nil {
 		slog.Error("executing chatMsgs template", slog.String("err", err.Error()))
 	}
@@ -27,9 +25,8 @@ func (a *App) updateChat(w http.ResponseWriter, r *http.Request) {
 	msg := r.FormValue("msg")
 
 	a.match.Commit(entity.MessageAction{
-		Authory:   entity.NewAuthor(a.match.Self()),
-		CreatedAt: time.Now(),
-		Text:      msg,
+		Authory: entity.NewAuthor(a.match.Self()),
+		Text:    msg,
 	})
 
 	err := a.templs.chatInput.Execute(w, a.match.Chat())
@@ -45,8 +42,7 @@ func (a *App) errMsg(msg string, err error) {
 	slog.Error(msg, slog.String("err", err.Error()))
 
 	a.match.Commit(entity.MessageAction{
-		Authory:   entity.NewAuthor("servidor"),
-		CreatedAt: time.Now(),
-		Text:      fmt.Errorf("%s: %w", msg, err).Error(),
+		Authory: entity.NewAuthor("servidor"),
+		Text:    fmt.Errorf("%s: %w", msg, err).Error(),
 	})
 }

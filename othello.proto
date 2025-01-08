@@ -3,7 +3,7 @@ syntax="proto3";
 option go_package = "local/othello/gateways/grpc/actsync/gen";
 
 service othello {
-  rpc sync(action) returns (empty);
+  rpc sync(stream action) returns (stream action);
 }
 
 message action {
